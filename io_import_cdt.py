@@ -18,9 +18,9 @@ import os
 from ctypes import cdll, c_char_p, c_int, create_string_buffer
 
 #identify the addon folder
-add_folder = os.path.sys.path[1]
+add_folder = os.path.sys.path[2]
 if 'addons' not in add_folder:
-    add_folder = os.path.sys.path[0]
+    add_folder = os.path.sys.path[1]
     
 #by the dll's which handle the importing   
 tri_dll = 'io_import_cdt_tri.dll'
