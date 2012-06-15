@@ -3,7 +3,7 @@ bl_info = {
     'author': "patmo141, batFINGER, NotYourBuddy",
     'version': (0,0,1),
     'blender': (2, 6, 3),
-    'api': 47733,
+    'api': 47879,
     'location': "File > Import-Export > CDT",
     'description': "Tool to import models from .cdt files",
     'warning': "",
