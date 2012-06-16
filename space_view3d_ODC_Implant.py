@@ -1194,7 +1194,7 @@ class GuideCylinder(bpy.types.Operator):
     use_plane = bpy.props.BoolProperty(name="Use Plane", default=False)
     cutout = bpy.props.BoolProperty(name="Cutout Plane", default=False)
     #inner = bpy.props.FloatProperty(name="Slice Thickness", description="view slice thickenss", default=1, min=1, max=10, step=5, precision=2, options={'ANIMATABLE'})
-    thickness = bpy.props.FloatProperty(name="Cylinder Thickness", description="", default=1, min=1, max=5, step=5, precision=1, options={'ANIMATABLE'})
+    thickness = bpy.props.FloatProperty(name="Cylinder Thickness", description="width in addition to the diameter of the implant", default=1, min=1, max=5, step=5, precision=1, options={'ANIMATABLE'})
     depth = bpy.props.FloatProperty(name="Top Edge to Apex of Implant", description="", default=15, min=10, max=30, step=5, precision=2, options={'ANIMATABLE'})
     length = bpy.props.FloatProperty(name="Length", description="make sure this enters into guide", default=5, min=1, max=10, step=5, precision=2, options={'ANIMATABLE'})
     
@@ -1215,7 +1215,7 @@ class GuideCylinder(bpy.types.Operator):
             ob.select = False
             
         if not space.implant:
-            self.report({'WARNING'}, "It seems you have not yet placed an implant...let's not get ahead of ourselves.  Pleaes place an implant before switching")
+            self.report({'WARNING'}, "It seems you have not yet placed an implant...let's not get ahead of ourselves.  Please place an implant before switching")
         
         Implant = sce.objects[space.implant]
         D = Implant.dimensions[0]
@@ -1262,10 +1262,13 @@ class GuideCylinder(bpy.types.Operator):
         #Translate top of cylinder to level of bit
         bpy.ops.transform.translate(value=(T[0], T[1], T[2]), constraint_axis=(False, False, False), constraint_orientation='LOCAL', mirror=False, proportional='DISABLED', proportional_edit_falloff='SMOOTH', proportional_size=1)
         
+        #this will be the final radius of the cylinder
+        #D is the diameter of the implant.
         A = D/2 + self.thickness
         V = Vector((A, A, A))
         bpy.ops.transform.resize(value = (V[0],V[1],V[2]))
         
+        #fill in the circle..alternatively, with  bmesh, we could just make a face.
         bpy.ops.mesh.extrude_edges_move()
         bpy.ops.transform.resize(value = (0,0,0))
         bpy.ops.mesh.remove_doubles(mergedist=0.0001)
