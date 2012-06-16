@@ -1268,12 +1268,12 @@ class GuideCylinder(bpy.types.Operator):
         V = Vector((A, A, A))
         bpy.ops.transform.resize(value = (V[0],V[1],V[2]))
         
-        #fill in the circle..alternatively, with  bmesh, we could just make a face.
+        #fill in the circle..alternatively, with  bmesh, we could just make a face? not sure how this works yet
         bpy.ops.mesh.extrude_edges_move()
         bpy.ops.transform.resize(value = (0,0,0))
         bpy.ops.mesh.remove_doubles(mergedist=0.0001)
         bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.mesh.extrude_faces_move()
+        bpy.ops.mesh.extrude_region_move()
         
         #translate the bottom by the thickness
         bpy.ops.transform.translate(value = (t[0],t[1],t[2]))
