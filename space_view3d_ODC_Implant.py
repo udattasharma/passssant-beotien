@@ -1436,7 +1436,7 @@ class InnerCylinder(bpy.types.Operator):
             bpy.ops.transform.resize(value = (A,A,A))
                     
         bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.mesh.extrude_faces_move()
+        bpy.ops.mesh.extrude_region_move()
         
         bpy.ops.transform.translate(value = (T[0],T[1],T[2]))
         
