@@ -5231,7 +5231,7 @@ class BridgeIndividual(bpy.types.Operator):
         a = bpy.context.scene.working_teeth[j].name
         
         mid_test = int(a) - (floor(int(a)/10))*10
-        #test to see if a midline tooth
+        #test to see if a midline tooth (eg, 8,9,24,25) or (11,21,31,41)
         if  mid_test == 1:
             if fmod(floor(int(a)/10)*10,20):
                 b = str(int(a) + 10)
@@ -5262,7 +5262,8 @@ class BridgeIndividual(bpy.types.Operator):
                     Margin.hide = False
                     Margin.select = True
                     sce.objects.active = Margin
-                
+                    
+            #not sure why this is commented out, I may revisit it    
             #bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)    
             current_objects=list(bpy.data.objects)                
             bpy.ops.object.duplicate()
@@ -5288,6 +5289,12 @@ class BridgeIndividual(bpy.types.Operator):
                 ob = bpy.data.objects[ob_name]
                 ob.select = True
                 ob.hide = False
+                
+                #test out deleting the fake user...
+                me = ob.data
+                if me.use_fake_user:
+                    me.use_fake_user = False               
+                
                 #Change this later since it resets the active objects len(bridge) times
                 #but it ends with one of the teeth as the active object, so...
                 sce.objects.active = ob
@@ -5307,9 +5314,8 @@ class BridgeIndividual(bpy.types.Operator):
             current_objects=list(bpy.data.objects)                
             bpy.ops.object.duplicate()
         
-            
+            #rename their vertex groups
             for tooth in bpy.context.selected_objects:
-            
                 j = tooth.name.partition('_')
                 a = j[0]
             
@@ -5317,9 +5323,7 @@ class BridgeIndividual(bpy.types.Operator):
                     if a not in g.name:
                         new_name = str(a + "_" + g.name)
                         g.name = new_name
-        
-        
-        
+               
             bpy.ops.object.join()
         
             new_objects=[]
@@ -5351,7 +5355,7 @@ class BridgeIndividual(bpy.types.Operator):
             Bridge = bpy.data.objects['Bridge']
         
             bpy.ops.mesh.select_all(action = 'SELECT')
-            bpy.ops.mesh.vertices_sort()
+            bpy.ops.mesh.sort_elements(type='SELECTED', elements={'VERT'}, reverse=False, seed=0)
         
             j=len(Bridge.material_slots)
             bpy.ops.object.material_slot_add()
