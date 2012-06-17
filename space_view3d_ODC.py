@@ -420,8 +420,7 @@ def update_func(self, context):
     print("update my test function")
     sce = bpy.context.scene
     
-    #gather all the relevant active and selected things
-       
+    #gather all the relevant active and selected things       
     if bpy.context.object:
         ob_now = bpy.context.object
         hide_now = ob_now.hide
@@ -3945,7 +3944,7 @@ class CopingFromCrown(bpy.types.Operator):
     scale = bpy.props.FloatProperty(name="Initial Shrink", description="", default=.85, min=.5, max=1, step=5, precision=2, options={'ANIMATABLE'})
     cutback = bpy.props.FloatProperty(name="Cutack", description="amount removed", default=.75, min=.2, max=2, step=5, precision=2, options={'ANIMATABLE'})
     smoothing = bpy.props.IntProperty(name="Pre-Smoothing", description="sometimes needed to prevent intersections", default=5, min=0, max=20, options={'ANIMATABLE'})
-    auto_groups = bpy.props.BoolProperty(name="Atomatic Support", default=True)
+    auto_groups = bpy.props.BoolProperty(name="Automatic Support", default=True)
         
     def execute(self, context):
 
@@ -3973,6 +3972,7 @@ class CopingFromCrown(bpy.types.Operator):
         #This is going to mess up any contact modifiers...let's hope they dont exist.
         bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
         
+        #duplcate the object, and rename it
         current_objects=list(bpy.data.objects)                
         bpy.ops.object.duplicate()
         new_objects = []
@@ -4030,6 +4030,8 @@ class CopingFromCrown(bpy.types.Operator):
             
             bpy.ops.mesh.select_all(action = 'DESELECT')
             bpy.ops.object.vertex_group_set_active(group ='Cutback')
+            
+            #this leaves the 'Cutback' group selected
             bpy.ops.object.vertex_group_select()
         
         if 'Cutback' not in ACoping.vertex_groups:
@@ -4044,13 +4046,20 @@ class CopingFromCrown(bpy.types.Operator):
             bpy.ops.object.vertex_group_add()
             g = ACoping.vertex_groups[n]
             g.name = 'Support'
-            
+        
+        #the cutback group is selected
+        #scale it down toward the BBox center
+        #the 3d cursor is currently the pivot point    
         scl = self.scale
         bpy.ops.transform.resize(value = (scl, scl, scl))
         
         bpy.ops.object.mode_set(mode = 'OBJECT')
         
         
+        #sometimes the scaling results in mesh overlap
+        #this initial smoothing reduces anatomical contour
+        #but keeps the mesh clean.  Cusps and grooves can be
+        #adjusted with sculpting aftward
         n = len(ACoping.modifiers)
         bpy.ops.object.modifier_add(type = 'SMOOTH')
         mod = ACoping.modifiers[n]        
@@ -4059,9 +4068,15 @@ class CopingFromCrown(bpy.types.Operator):
         mod.iterations = self.smoothing
         mod.name = 'Initial Smoothing'
         
+        #if ther dynamic margin modifier is already in place
+        #this will not work. Typically, in the design flow
+        #that modifier will not be there, but some code to check
+        #and then moe up the modiier once or twice might be
+        #more robust.
         bpy.ops.object.modifier_move_up(modifier = 'Initial Smoothing')
         
         
+        #use a shrinkwrap with offset to 'cutback' the surface
         n = len(ACoping.modifiers)
         bpy.ops.object.modifier_add(type = 'SHRINKWRAP')
         mod = ACoping.modifiers[n]
@@ -4074,7 +4089,8 @@ class CopingFromCrown(bpy.types.Operator):
         
         bpy.ops.object.modifier_move_up(modifier = 'Cutback')
         
-        
+        #use a shrinkwrap w/o offset to pull the suppor out to the
+        #surface of the full contour
         n = len(ACoping.modifiers)
         bpy.ops.object.modifier_add(type = 'SHRINKWRAP')
         mod = ACoping.modifiers[n]
@@ -4087,6 +4103,8 @@ class CopingFromCrown(bpy.types.Operator):
         
         bpy.ops.object.modifier_move_up(modifier = 'Support')
         
+        #making the full contour crown transparent shows the
+        #cutback for good visualization.
         Contour.show_transparent = True
         ACoping.show_transparent = False
         
