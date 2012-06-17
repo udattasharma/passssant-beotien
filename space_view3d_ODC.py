@@ -5231,13 +5231,10 @@ class BridgeIndividual(bpy.types.Operator):
     
     #dlat_adj = bpy.props.FloatProperty(name="D Lateral Adjust", description="", default=0, min=-2, max=2, step=2, precision=1, options={'ANIMATABLE'})
     
-    influence = bpy.props.FloatProperty(name="Nearby Influence", description="", default=0, min=0, max=2, step=2, precision=1, options={'ANIMATABLE'})
-    
+    influence = bpy.props.FloatProperty(name="Nearby Influence", description="", default=0, min=0, max=2, step=2, precision=1, options={'ANIMATABLE'})   
     mscale = bpy.props.FloatProperty(name="m scale", description="", default=1, min=.75, max=1.5, step=2, precision=1, options={'ANIMATABLE'})
     dscale = bpy.props.FloatProperty(name="d scale", description="", default=1, min=.75, max=1.5, step=2, precision=1, options={'ANIMATABLE'})
-
     bulbous = bpy.props.FloatProperty(name="bulbous", description="", default=0, min=0, max=1.5, step=2, precision=1, options={'ANIMATABLE'})
-
     twist = bpy.props.IntProperty(name="twist", description="twist", default=0, min=-5, max=5, options={'ANIMATABLE'})     
     smooth = bpy.props.IntProperty(name="smooth", description="smooth", default=3, min=0, max=20, options={'ANIMATABLE'})     
 
@@ -5451,6 +5448,21 @@ class BridgeIndividual(bpy.types.Operator):
         bpy.ops.mesh.select_all(action = 'SELECT')
         bpy.ops.mesh.normals_make_consistent()
         bpy.ops.object.mode_set(mode='OBJECT')
+        
+        
+        #Clear the higher level multires detail
+        #unfortunately modifying the base mesh ruins the
+        #multires data in most situations...we can be clever
+        #and use some shrinkwraps to put it back, but i haven't
+        #had time to code it.
+        bpy.ops.object.multires_base_apply(modifier = 'Multires')
+        mod = Bridge.modifiers['Multires']        
+        subdivs = mod.levels #save these.
+        mod.levels = 0
+        bpy.ops.object.multires_higher_levels_delete(modifier = 'Multires')
+        for i in range(0,subdivs):
+            bpy.ops.object.multires_subdivide(modifier = 'Multires')
+        
 
         return{'FINISHED'}
     
