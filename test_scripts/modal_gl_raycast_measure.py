@@ -84,6 +84,7 @@ def draw_points(context, points, size):
     return
 
 
+
 #from the template...a few practice items
 
 #put text above the active object
@@ -102,9 +103,17 @@ def draw_callback_px(self, context):
     ob = bpy.context.object
     mx = ob.matrix_world
     imx = mx.inverted()
-    ob_loc_3d = ob.location + Vector((0,0,1))
+    ob_loc_3d = ob.location + Vector((0,0,1))    
     ob_loc2D = location_3d_to_region_2d(region, rv3d, ob_loc_3d)
+        
+    #use the ob_loc_2d to change display position
+    #always "away" from the object origin (bound box center would be better)
+    mouse_quad = [-1,-1]
     
+    if self.mouse[0] > ob_loc2D[0]:
+        mouse_quad[0] = 1
+    if self.mouse[1] > ob_loc2D[1]:
+        mouse_quad[1] = 1
     
     #put some text at Z+1 over the object origin
     blf.position(0,ob_loc2D[0],ob_loc2D[1],0)
@@ -115,7 +124,6 @@ def draw_callback_px(self, context):
     points = []
     points.append((self.mouse[0]+10,self.mouse[1]))
     points.append((self.mouse[0]-10,self.mouse[1]))
-    print(self.mouse)
     draw_polyline_from_coordinates2D(context, points, "GL_LINE_STIPPLE")
     
     #vertical line across cursor
@@ -144,22 +152,41 @@ def draw_callback_px(self, context):
     
     #raycast what I think is the ray onto the object
     #raycast needs to be in ob coordinates.
-    a = loc - 3000*vec
-    b = loc + 3000*vec
+    a = loc + 3000*vec
+    b = loc - 3000*vec
     
     
     hit = ob.ray_cast(imx*a, imx*b)
    
     #do different things if we think it's hitting
+    bgl.glColor4f(1.0, 1.0, 1.0, 1.0) 
     if hit[2] != -1:
         diff = mx*hit[0] - curs
         dist = diff.length
+        print(mx*hit[0])
         
-        blf.position(0,self.mouse[0]+30,self.mouse[1],0)
+        blf.position(0,self.mouse[0]+15,self.mouse[1]+30*mouse_quad[1],0)
         blf.size(0,20,72)
-        blf.draw(0,str(dist))
+        blf.draw(0,str(dist)[0:4])
+        
+        
+        #now calc the thickness...presume its not super complicated, like a spiral shell
+        a = hit[0]  #no need to go to world yet
+        b1 = mx*hit[0] + 3000*vec  #the first hit going forward...
+        b2 = mx*hit[0] - 3000*vec  #the first hit going backward
+        
+        hit1 = hit = ob.ray_cast(a, imx*b1)
+        hit2 = hit = ob.ray_cast(a, imx*b2)
+        
+        if hit1[2] != -1 and hit2[2] != -1:
+            thick_v = mx*hit1[0] - mx*hit2[0]
+            thickness = thick_v.length
+            blf.position(0,self.mouse[0]+15,self.mouse[1]+10*mouse_quad[1],0)
+            blf.size(0,20,72)
+            blf.draw(0,str(thickness)[0:4])
+        
     else:        
-        blf.position(0,self.mouse[0]+30,self.mouse[1],0)
+        blf.position(0,self.mouse[0]+15,self.mouse[1]+30*mouse_quad[1],0)
         blf.size(0,20,72)
         blf.draw(0,"no hit")
         
