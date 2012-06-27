@@ -432,7 +432,23 @@ button_data = button_data = [
     (0.9624097392037425,0.06172079121646777)]]
     
 
-
+button_names = [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28]
 
 # slightly ugly use of the string representation of GL_LINE_TYPE.
 #modified form zeffi's edge filet script
@@ -502,7 +518,11 @@ def draw_callback_px(self, context):
     
     #need to check height available..whatev
     #menu_width is also our scale!
+    menu_aspect = 1.06504085828804
     menu_width = .8*width
+    menu_height = menu_width/menu_aspect
+    if menu_height > height:
+        menu_width = menu_aspect*.8*height
     
     #origin of menu is bottom left corner
     menu_loc = (.1 * width, .1*height) #for now
