@@ -523,9 +523,9 @@ def draw_callback_px(self, context):
     menu_height = menu_width/menu_aspect
     if menu_height > height:
         menu_width = menu_aspect*.8*height
-    
+        menu_height = menu_width/menu_aspect
     #origin of menu is bottom left corner
-    menu_loc = (.1 * width, .1*height) #for now
+    menu_loc = (.5*(width - menu_width), .5*(height - menu_height)) #for now
     
     #draw all the buttons
     color = (1.0,1.0,1.0,1.0)
