@@ -4440,15 +4440,17 @@ class GetCrownForm(bpy.types.Operator):
             bpy.ops.mesh.select_more()
             bpy.ops.mesh.select_more()
             bpy.ops.mesh.remove_doubles()
-            bpy.ops.mesh.relax(iterations=10)
+            #this operator causes multires data to get screwed up!
+            #bpy.ops.mesh.relax(iterations=10)
             bpy.ops.mesh.vertices_smooth(repeat = 5)
             bpy.ops.object.mode_set(mode='OBJECT')
             
-            bpy.ops.object.multires_base_apply(modifier = 'Multires')
-            bpy.ops.object.modifier_remove(modifier = 'Multires')
-            bpy.ops.object.modifier_add(type = 'MULTIRES')
-            for i in range(0,3):
-                bpy.ops.object.multires_subdivide(modifier = 'Multires')
+            #this may no longer be needed!
+            #bpy.ops.object.multires_base_apply(modifier = 'Multires')
+            #bpy.ops.object.modifier_remove(modifier = 'Multires')
+            #bpy.ops.object.modifier_add(type = 'MULTIRES')
+            #for i in range(0,3):
+                #bpy.ops.object.multires_subdivide(modifier = 'Multires')
             
             
         
@@ -6277,6 +6279,7 @@ class HoleFiller(bpy.types.Operator):
             if sverts > 4:
                 print('extruding again')
                 bpy.ops.mesh.extrude_edges_move()
+                bpy.ops.object.vertex_group_remove_from() #recent API, extruding leaves new verts in any groups from verts they were extruded from.
     
                 scl = (1 - 1/step*i)/scl
    
