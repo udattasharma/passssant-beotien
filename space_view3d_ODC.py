@@ -4210,14 +4210,14 @@ class PonticDesign(bpy.types.Operator):
     bl_label = "Pontic Design"
     bl_options = {'REGISTER','UNDO'}
     
-    #hz_width = bpy.props.FloatProperty(name="Holy Zone", description="Width of marginal seal", default=0.5, min=.2, max=2, step=5, precision=2, options={'ANIMATABLE'})
-    #cem_gap = bpy.props.FloatProperty(name="Cement Gap", description="Thickness of CG", default=0.05, min=.02, max=.2, step=2, precision=2, options={'ANIMATABLE'})
-    #margin_quality = bpy.props.FloatProperty(name="Margin Quality", description="0 for shoulder 1 for knife", default=0.25, min=0, max=1, step=5, precision=2, options={'ANIMATABLE'})
-    
-    #res = bpy.props.FloatProperty(name="resolution", description="vertex spacing", default=0.1, min=.02, max=.2, step=1, precision=3, options={'ANIMATABLE'})        
-    #feather = bpy.props.IntProperty(name="Blend Zone", description="Transition from HZ to CG", default=3, min=1, max=10, options={'ANIMATABLE'})
-    #final_smoothing = bpy.props.IntProperty(name="Final Smoothing", description="Final Smoothing Iterations", default=3, min=0, max=10, options={'ANIMATABLE'})
-    
+    p_types=['OVATE',
+            'TISSUE',]
+            
+    p_enum = []
+    for index, type in enumerate(p_types):
+        p_enum.append((str(index), p_types[index], str(index)))
+    p_type = bpy.props.EnumProperty(name="Pontic Type", description="How To Shape the pontic", items=p_enum, default='0')
+    offset = bpy.props.FloatProperty(name="Tissue spacer", description="", default=1, min=-1, max=4, step=2, precision=1, options={'ANIMATABLE'}) 
     def execute(self, context):
         #get the active tooth
         sce=bpy.context.scene
@@ -4228,7 +4228,7 @@ class PonticDesign(bpy.types.Operator):
         Master = bpy.data.objects[master]
         
         #ensure that restoration type is pontic
-        if tooth.rest_type != '1': #safer long term.  if tooth.rest_types[tooth.rest_type] != 'PONTIC'
+        if tooth.rest_type != '1': #safer long term.  if tooth.rest_types[int(tooth.rest_type)] != 'PONTIC'
             return {'CANCELLED'} #put some warning here.
         
         #get the pontic    
@@ -4243,82 +4243,96 @@ class PonticDesign(bpy.types.Operator):
         Pontic.select = True
         Pontic.hide = False
         
-        bpy.ops.object.mode_set(mode = 'EDIT')
         
-        # select the filled_hole group
-        bpy.ops.object.vertex_group_set_active(group = 'filled_hole')
-        bpy.ops.mesh.select_all(action = 'DESELECT')
-        bpy.ops.object.vertex_group_select()
+        if self.p_types[int(self.p_type)] == 'OVATE':
+            bpy.ops.object.mode_set(mode = 'EDIT')
         
-        #region to loop and #find the COM of said loop
-        bpy.ops.mesh.region_to_loop()
-        bpy.ops.object.mode_set(mode = 'OBJECT') #this updates the selection data...and does some other good stuff
-        sel_verts = [v.index for v in me.vertices if v.select]
-        COM = get_com(me,sel_verts,mx)
+            # select the filled_hole group
+            bpy.ops.object.vertex_group_set_active(group = 'filled_hole')
+            bpy.ops.mesh.select_all(action = 'DESELECT')
+            bpy.ops.object.vertex_group_select()
         
-        #get dimensions of loop (x,y)
+            #region to loop and #find the COM of said loop
+            bpy.ops.mesh.region_to_loop()
+            bpy.ops.object.mode_set(mode = 'OBJECT') #this updates the selection data...and does some other good stuff
+            sel_verts = [v.index for v in me.vertices if v.select]
+            COM = get_com(me,sel_verts,mx)
         
-        xs = [(mx*me.vertices[i].co)[0] for i in sel_verts]
-        ys = [(mx*me.vertices[i].co)[1] for i in sel_verts]
-        scale_x = (max(xs) - min(xs))/1.5
-        scale_y = (max(ys) - min(ys))/1.5
+            #get dimensions of loop (x,y)
         
-        #add a sphere at COP
-        sce.cursor_location = COM
+            xs = [(mx*me.vertices[i].co)[0] for i in sel_verts]
+            ys = [(mx*me.vertices[i].co)[1] for i in sel_verts]
+            scale_x = (max(xs) - min(xs))/1.5
+            scale_y = (max(ys) - min(ys))/1.5
         
-        current_objects=list(bpy.data.objects)                
-        bpy.ops.mesh.primitive_uv_sphere_add(location = (COM[0], COM[1], COM[2]+3))
-        for o in bpy.data.objects:
-            if o not in current_objects:
-                o.parent= sce.objects[master]
-                o.name = tooth.name + '_ovate'        
-                Ovate = o
+            #add a sphere at COP
+            sce.cursor_location = COM
+            ov_loc = mx.inverted() * (COM + Vector((0,0,+3)))
+        
+            current_objects=list(bpy.data.objects)                
+            bpy.ops.mesh.primitive_uv_sphere_add(location = tuple(ov_loc))
+            for o in bpy.data.objects:
+               if o not in current_objects:
+                    o.parent= Pontic #conside Master..but then you have to move them both
+                    o.name = tooth.name + '_ovate'        
+                    Ovate = o
                 
-        #pivot point at median point
-        for A in bpy.context.window.screen.areas:
-            if A.type == 'VIEW_3D':
-                for s in A.spaces:
-                    if s.type == 'VIEW_3D':
-                        s.pivot_point = 'MEDIAN_POINT'
-        #scale X
-        scale_z = min([scale_x, scale_y])
-        bpy.ops.transform.resize(value = (scale_x, scale_y, scale_z))
+            #pivot point at median point
+            for A in bpy.context.window.screen.areas:
+                if A.type == 'VIEW_3D':
+                    for s in A.spaces:
+                        if s.type == 'VIEW_3D':
+                            s.pivot_point = 'MEDIAN_POINT'
+            #scale X
+            scale_z = min([scale_x, scale_y])
+            bpy.ops.transform.resize(value = (scale_x, scale_y, scale_z))
 
-        #make pontic active and selected again
-        bpy.ops.object.select_all(action = 'DESELECT')
-        Pontic.select = True
-        sce.objects.active = Pontic
+            #make pontic active and selected again
+            bpy.ops.object.select_all(action = 'DESELECT')
+            Pontic.select = True
+            sce.objects.active = Pontic
         
-        #shrinkwarp filled hole to this oval
-        n=len(Pontic.modifiers)    
-        bpy.ops.object.modifier_add(type='SHRINKWRAP')
-        mod = bpy.context.object.modifiers[n]
-        mod.wrap_method='PROJECT'
-        mod.vertex_group = 'filled_hole'        
-        mod.use_negative_direction=True
-        mod.use_positive_direction=False
-        mod.use_project_z=True
-        mod.offset=-0.2 #perhaps negative
-        mod.target= Ovate
-        mod.name="Ovate Pontic"
-        mod.show_expanded=False
+            #shrinkwarp filled hole to this oval
+            n=len(Pontic.modifiers)    
+            bpy.ops.object.modifier_add(type='SHRINKWRAP')
+            mod = bpy.context.object.modifiers[n]
+            mod.wrap_method='PROJECT'
+            mod.vertex_group = 'filled_hole'        
+            mod.use_negative_direction=True
+            mod.use_positive_direction=False
+            mod.use_project_z=True
+            mod.offset=-0.2 #perhaps negative
+            mod.target= Ovate
+            mod.name="Ovate Pontic"
+            mod.show_expanded=False
         
-        for m in range(0,n-1):
-            bpy.ops.object.modifier_move_up(modifier = "Ovate Pontic")
+            for m in range(0,n-1):
+                bpy.ops.object.modifier_move_up(modifier = "Ovate Pontic")
         
-        #move it up below the multires modifier, above the smoooth.
-        #project z
-        #pos and negative
-        #nearest v
-        #apply said modifier
-        
-        #if its tissue lapped
-           #add a shirnkwrap modifier
-           #project z
-           #pos and negative
-           #group = "filled hole"
-           #offset = 1
-        
+
+        if self.p_types[int(self.p_type)] == 'TISSUE':
+            tissue = tooth.prep_model
+            if not tissue:
+                return {'CANCELLED'}
+                  
+            Tissue = bpy.data.objects[tissue]
+            #shrinkwarp filled hole to this oval
+            n=len(Pontic.modifiers)    
+            bpy.ops.object.modifier_add(type='SHRINKWRAP')
+            mod = Pontic.modifiers[n]
+            mod.wrap_method='PROJECT'
+            mod.vertex_group = 'filled_hole'        
+            mod.use_negative_direction=True
+            mod.use_positive_direction=True
+            mod.use_project_z=True
+            mod.offset=self.offset #perhaps negative
+            mod.target= Tissue
+            mod.name="Tissue Pontic"
+            mod.show_expanded=False
+            
+            for m in range(0,n):
+                bpy.ops.object.modifier_move_up(modifier = "Tissue Pontic")
+                
         return{'FINISHED'}
     
 class PrepFromMargin(bpy.types.Operator):
