@@ -7050,14 +7050,10 @@ class BridgeIndividual(bpy.types.Operator):
     bl_label = "Bridge Individual"
     bl_options = {'REGISTER','UNDO'}
     
-    #properties
-    
-    #mvert_adj = bpy.props.FloatProperty(name="M. Vertical Adjust", description="", default=0, min=-2, max=2, step=2, precision=1, options={'ANIMATABLE'})
-    
-    #mlat_adj = bpy.props.FloatProperty(name="M. Lateral Adjust", description="", default=0, min=-2, max=2, step=2, precision=1, options={'ANIMATABLE'})
-    
-    #dvert_adj = bpy.props.FloatProperty(name="D Vertical Adjust", description="", default=0, min=-2, max=2, step=2, precision=1, options={'ANIMATABLE'})
-    
+    #properties   
+    #mvert_adj = bpy.props.FloatProperty(name="M. Vertical Adjust", description="", default=0, min=-2, max=2, step=2, precision=1, options={'ANIMATABLE'})    
+    #mlat_adj = bpy.props.FloatProperty(name="M. Lateral Adjust", description="", default=0, min=-2, max=2, step=2, precision=1, options={'ANIMATABLE'})    
+    #dvert_adj = bpy.props.FloatProperty(name="D Vertical Adjust", description="", default=0, min=-2, max=2, step=2, precision=1, options={'ANIMATABLE'})    
     #dlat_adj = bpy.props.FloatProperty(name="D Lateral Adjust", description="", default=0, min=-2, max=2, step=2, precision=1, options={'ANIMATABLE'})
     
     influence = bpy.props.FloatProperty(name="Nearby Influence", description="", default=0, min=0, max=2, step=2, precision=1, options={'ANIMATABLE'})   
@@ -7284,13 +7280,13 @@ class BridgeIndividual(bpy.types.Operator):
         #multires data in most situations...we can be clever
         #and use some shrinkwraps to put it back, but i haven't
         #had time to code it.
-        bpy.ops.object.multires_base_apply(modifier = 'Multires')
-        mod = Bridge.modifiers['Multires']        
-        subdivs = mod.levels #save these.
-        mod.levels = 0
-        bpy.ops.object.multires_higher_levels_delete(modifier = 'Multires')
-        for i in range(0,subdivs):
-            bpy.ops.object.multires_subdivide(modifier = 'Multires')
+        #bpy.ops.object.multires_base_apply(modifier = 'Multires')
+        #mod = Bridge.modifiers['Multires']        
+        #subdivs = mod.levels #save these.
+        #mod.levels = 0
+        #bpy.ops.object.multires_higher_levels_delete(modifier = 'Multires')
+        #for i in range(0,subdivs):
+            #bpy.ops.object.multires_subdivide(modifier = 'Multires')
         
 
         return{'FINISHED'}
