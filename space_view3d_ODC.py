@@ -9553,6 +9553,10 @@ class VIEW3D_PT_DentDesTools(View3DPanel, bpy.types.Panel):
                 col = layout.column(align=True)
                 col.operator("view3d.auto_rough",text="Auto Rough")
                 
+                if r_type == '1' or sce.all_functions:                     
+                    row = layout.row(align=False)        
+                    row.operator("view3d.pontic_design", text="Pontic Design")
+                
                 if r_type != '1':
                     row = layout.row(align=False)        
                     row.operator("object.snap_verts_mesh", text="Seat to Margin")
