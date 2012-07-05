@@ -21,7 +21,7 @@ bl_info = {
     'author': "Patrick R. Moore",
     'version': (1,0,2),
     'blender': (2, 6, 3),
-    'api': 47515,
+    'api': 48632,
     'location': "3D View -> Tool Shelf",
     'description': "10/25/2011 Version",
     'warning': "",
@@ -2333,9 +2333,9 @@ class AppendWorkingTooth(bpy.types.Operator):
         #box.prop(self, "abutment")
 
  
-class ButtonMultiSelect(bpy.types.Operator):
+class PlanRestorations(bpy.types.Operator):
     '''Select Multiple Interestingly Shaped Buttons'''
-    bl_idname = "view3d.button_multi_select"
+    bl_idname = "view3d.plan_restorations"
     bl_label = "Plan Restorations"
 
     def modal(self, context, event):
@@ -9402,12 +9402,18 @@ class VIEW3D_PT_DentDesTools(View3DPanel, bpy.types.Panel):
         row.label(text="By Patrick Moore and others...")
         row.operator("wm.url_open", text = "", icon="QUESTION").url = "https://sites.google.com/site/blenderdental/contributors"
         
+        #icons wiki
+        #http://wiki.blender.org/index.php/Dev:2.5/Doc/How_to/Add_an_icon
+        #list of icons enum
+        #http://www.blender.org/documentation/blender_python_api_2_62_release/bpy.types.UILayout.html#bpy.types.UILayout
+        
         row = layout.row()
         row.template_list(sce, "working_teeth", sce, "working_tooth_index")
         
         col = row.column(align=True)
         col.operator("view3d.append_working_tooth", text = "Add a Tooth")
         col.operator("view3d.remove_working_tooth", text = "Remove a Tooth")
+        col.operator("view3d.plan_restorations", text = "Plan Multiple")
         
         j = sce.working_tooth_index
         tooth = sce.working_teeth[j]
@@ -9652,6 +9658,7 @@ class ImplantPanel(View3DPanel, bpy.types.Panel):
         col = row.column(align=True)
         col.operator("view3d.append_working_space", text = "Add a Space")
         col.operator("view3d.remove_working_space", text = "Remove a Space")
+        col.operator("view3d.plan_restorations", text = "Plan Multiple")
         #col.template_list(sce, "library_implants", sce, "library_implants_index",rows =2, maxrows = 2)
         
         row = layout.row()
@@ -9755,7 +9762,7 @@ classes = ([VIEW3D_PT_DentDesTools, VIEW3D_PT_DesParams, VIEW3D_restoration_info
             GoToAxis, SnapVerts2Mesh, SetMaster, SelectArea, GoToSculpt, SplitData, HoleFiller,
            AppendWorkingTooth, RemoveWorkingTooth,PrepareConnectors,MakeConnectors,CervicalConvergence,PrepFromMargin,
            MinThickness, BridgeIndividual, CementGap, SimpleCoping, StitchBridge, MarginFromView, TossOthers,  AddDentalMaterials,
-           InitiateAutoMargin, WalkAroundMargin, CopingFromCrown, DefineAxis, CursorToBound, SliceView, NormalView,ButtonMultiSelect,
+           InitiateAutoMargin, WalkAroundMargin, CopingFromCrown, DefineAxis, CursorToBound, SliceView, NormalView,PlanRestorations,
            PlaceImplant,ImplantPanel, ImplantLibPanel, AddImplantMaterials, AppendWorkingImplant, 
            RemoveWorkingImplant, AppendLibraryImplant, RemoveLibraryImplant,CenterAllObjects,ImportAllImplants,GoToFixed, HideHardware,
            ThicknessCompensation, AppendSplint, RemoveSplint, DefineSplintAxis, DrawOccPlane, CalcPlane, DrawSplintArchitecture,
