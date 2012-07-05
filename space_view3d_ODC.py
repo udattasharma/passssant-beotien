@@ -4244,14 +4244,20 @@ class PonticDesign(bpy.types.Operator):
         Pontic.hide = False
         
         
-        if self.p_types[int(self.p_type)] == 'OVATE':
-            bpy.ops.object.mode_set(mode = 'EDIT')
         
-            # select the filled_hole group
-            bpy.ops.object.vertex_group_set_active(group = 'filled_hole')
-            bpy.ops.mesh.select_all(action = 'DESELECT')
-            bpy.ops.object.vertex_group_select()
+        bpy.ops.object.mode_set(mode = 'EDIT')
         
+        # select the filled_hole group, select more, make a new group
+        bpy.ops.object.vertex_group_set_active(group = 'filled_hole')
+        bpy.ops.mesh.select_all(action = 'DESELECT')
+        bpy.ops.object.vertex_group_select()
+        bpy.ops.mesh.select_more()
+        n = len(Pontic.vertex_groups)
+        bpy.ops.object.vertex_group_assign(new=True)
+        Pontic.vertex_groups[n].name = "Tissue"
+        bpy.ops.mesh.select_less()
+            
+        if self.p_types[int(self.p_type)] == 'OVATE':    
             #region to loop and #find the COM of said loop
             bpy.ops.mesh.region_to_loop()
             bpy.ops.object.mode_set(mode = 'OBJECT') #this updates the selection data...and does some other good stuff
@@ -4276,6 +4282,7 @@ class PonticDesign(bpy.types.Operator):
                     o.parent= Pontic #conside Master..but then you have to move them both
                     o.name = tooth.name + '_ovate'        
                     Ovate = o
+                    Ovate.draw_type = 'WIRE'
                 
             #pivot point at median point
             for A in bpy.context.window.screen.areas:
@@ -4297,7 +4304,7 @@ class PonticDesign(bpy.types.Operator):
             bpy.ops.object.modifier_add(type='SHRINKWRAP')
             mod = bpy.context.object.modifiers[n]
             mod.wrap_method='PROJECT'
-            mod.vertex_group = 'filled_hole'        
+            mod.vertex_group = "Tissue"       
             mod.use_negative_direction=True
             mod.use_positive_direction=False
             mod.use_project_z=True
@@ -4314,14 +4321,15 @@ class PonticDesign(bpy.types.Operator):
             tissue = tooth.prep_model
             if not tissue:
                 return {'CANCELLED'}
-                  
+            
+            bpy.ops.object.mode_set(mode='OBJECT')      
             Tissue = bpy.data.objects[tissue]
             #shrinkwarp filled hole to this oval
             n=len(Pontic.modifiers)    
             bpy.ops.object.modifier_add(type='SHRINKWRAP')
             mod = Pontic.modifiers[n]
             mod.wrap_method='PROJECT'
-            mod.vertex_group = 'filled_hole'        
+            mod.vertex_group = "Tissue"        
             mod.use_negative_direction=True
             mod.use_positive_direction=True
             mod.use_project_z=True
@@ -7267,7 +7275,7 @@ class BridgeIndividual(bpy.types.Operator):
         bpy.ops.object.vertex_group_select()
         
         bpy.ops.mesh.looptools_relax(input='selected', interpolation='cubic', iterations='1', regular=True)
-        bpy.ops.mesh.looptools_bridge(cubic_strength=self.bulbous, interpolation='cubic', loft=False, loft_loop=False, min_width=75, mode='shortest', remove_faces=True, reverse=False, segments=3, twist=self.twist)
+        bpy.ops.mesh.looptools_bridge(cubic_strength=self.bulbous, interpolation='cubic', loft=False, loft_loop=False, min_width=75, mode='basic', remove_faces=True, reverse=False, segments=3, twist=self.twist)
         bpy.ops.mesh.vertices_smooth(repeat = self.smooth)
         
         bpy.ops.mesh.select_all(action = 'SELECT')
